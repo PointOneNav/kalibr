@@ -2,7 +2,44 @@
 
 *Ubuntu 14.04+ROS indigo*: [![Build Status](https://jenkins.asl.ethz.ch/buildStatus/icon?job=kalibr_weekly/label=ubuntu-trusty)](https://jenkins.asl.ethz.ch/job/kalibr_weekly/label=ubuntu-trusty/) *Ubuntu 16.04+ROS kinetic*: [![Build Status](https://jenkins.asl.ethz.ch/buildStatus/icon?job=kalibr_weekly/label=ubuntu-trusty)](https://jenkins.asl.ethz.ch/job/kalibr_weekly/label=ubuntu-xenial/)
 
-## Introduction
+# Introduction
+This is the PointOne FORK of the Kalibr toolbox. The offline imu to camera calibration tool was modified to use a 3D point cloud from the SFM solution as the calibration target instead of a 2D cailbration grid.
+
+# Using the Modified IMU-Camera Calibratoin tool:
+## Setup
+Setup your environment per the Kalibr wiki referenced below. In the ~/kalibr_workspace/ directory created in the instructions you copy to src/Kalibr/ this Kalibr source Git repository. 
+
+Setup your environment per Kalibr instructions via $source ~/kalibr_workspace/devel/setup.bash
+This should include the following in your PYTHONPATH =/home/name/kalibr_workspace/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
+
+## Create a ROS BAG
+Currently you still need to create a ROS bag from the camera images and the IMU file. The PointOne bagcreator is given a directory where it expects to find the camera and IMU data. You need to put the image files from each camera into separate subfolders called cam0/, cam1/, etc. Put the IMU CSV file in the top of directory. Then execute:
+~/kalibr_workspace/src/Kalibr/aslam_offline_calibration/kalibr/python/kalibr_bagcreater_PointOneLog 
+--folder /logs/calibration/kalibr/testfolder 
+--output-bag /logs/calibration/kalibr/testfolder/rosbag.bag
+
+The "topics" in the rosbag will be cam#/ and imu_filename/
+
+## Other Files
+You will also need:
+ 1. the SFM protobuf as a JSON file. This should contain the 3D structure, the camera calibration information, and the list of images with detections. The timestamps are in the names of the image files and must correspond to those put into the rosbag.
+2. A camchain.yaml that includes the camera intrinsics for each camera topic in the rosbag. 
+3. A imu.yaml that contains the noise characteristics of the IMU topic in the rosbag
+
+## Running the PointOne IMU-CAM Calibrator:
+In this example the files are all in the /logs/2018-07-25/ folder:
+
+~/kalibr_workspace/src/Kalibr/aslam_offline_calibration/kalibr/python:master$ ./kalibr_calibrate_imu_camera_PointOne  
+ --cam /logs/2018-07-25/camchain-equi.yaml
+ --imu /logs/2018-07-25/imu.yaml 
+ --map /logs/2018-07-25/sfmMap.json
+ --bag /logs/2018-07-25/rosbag.bag 
+
+It will produce graphs and a PDF report.
+
+
+# Original Kalibr Introduction
+
 Kalibr is a toolbox that solves the following calibration problems:
 
 1. **Multiple camera calibration**: 
